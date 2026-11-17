@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ops Console style guide</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="prototype-utils.css">
+  <style>
+    .sg { max-width: var(--content-max-width); margin: 0 auto; padding: var(--space-4) var(--space-3); display: flex; flex-direction: column; gap: var(--space-5); }
+    .sg section { display: flex; flex-direction: column; gap: var(--space-3); }
+    .sg h2 { padding-bottom: var(--space-1); border-bottom: var(--border-width) solid var(--color-border-subtle); }
+    .sg-label { font-size: var(--font-size-sm); color: var(--color-fg-muted); font-family: var(--font-family-mono); }
+    .sg-swatch { display: flex; flex-direction: column; gap: var(--space-1); }
+    .sg-chip { height: var(--control-height-lg); border: var(--border-width) solid var(--color-border-subtle); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+    .sg-bar { background: var(--color-primary); height: var(--space-2); }
+    .sg-box { background: var(--color-info-bg); border: var(--border-width) solid var(--color-primary); height: var(--control-height-lg); width: var(--control-height-lg); }
+    .sg-state { display: flex; flex-direction: column; gap: var(--space-1); }
+    .sg-preview { position: relative; min-height: var(--control-height-lg); padding: var(--space-3); border: var(--border-width) dashed var(--color-border); border-radius: var(--radius-md); }
+    .sg-preview .modal, .sg-preview .drawer, .sg-preview .toast, .sg-preview .backdrop { position: static; transform: none; inset: auto; width: auto; max-width: var(--modal-width); opacity: 1; }
+    .sg-preview .tooltip { position: static; display: inline-block; }
+    .sg-preview .dropdown-menu { display: block; position: static; margin-top: var(--space-1); }
+    .sg-preview .backdrop { height: var(--control-height-lg); opacity: var(--opacity-backdrop); }
+    .sg-guidelines ul { margin: var(--space-1) 0 0; padding-left: var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); }
+    .sg-guidelines h3 { margin-top: var(--space-3); }
+  </style>
+</head>
+<body>
+<div class="sg">
+  <header>
+    <h1>Ops Console style guide</h1>
+    <p class="text-muted">Tokens, utilities, standard components and UI guidelines for the operations console.</p>
+  </header>
+
+  <section id="colors">
+    <h2>Color tokens</h2>
+    <div class="grid">
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-fg);color:var(--color-bg)">Aa</div><span class="sg-label">color-fg</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-fg-muted);color:var(--color-bg)">Aa</div><span class="sg-label">color-fg-muted</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-bg);color:var(--color-fg)">Aa</div><span class="sg-label">color-bg</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-surface);color:var(--color-fg)">Aa</div><span class="sg-label">color-surface</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-surface-2);color:var(--color-fg)">Aa</div><span class="sg-label">color-surface-2</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-primary);color:var(--color-on-primary)">Aa</div><span class="sg-label">color-primary</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-primary-hover);color:var(--color-on-primary)">Aa</div><span class="sg-label">color-primary-hover</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-on-primary);color:var(--color-primary)">Aa</div><span class="sg-label">color-on-primary</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-border)"></div><span class="sg-label">color-border</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-border-subtle)"></div><span class="sg-label">color-border-subtle</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-danger);color:var(--color-on-primary)">Aa</div><span class="sg-label">color-danger</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-danger-hover);color:var(--color-on-primary)">Aa</div><span class="sg-label">color-danger-hover</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-info-bg);color:var(--color-info-fg)">Info</div><span class="sg-label">color-info-bg / -fg</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-success-bg);color:var(--color-success-fg)">Success</div><span class="sg-label">color-success-bg / -fg</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-warning-bg);color:var(--color-warning-fg)">Warning</div><span class="sg-label">color-warning-bg / -fg</span></div>
+      <div class="sg-swatch"><div class="sg-chip" style="background:var(--color-danger-bg);color:var(--color-danger-fg)">Danger</div><span class="sg-label">color-danger-bg / -fg</span></div>
+    </div>
+  </section>
+
+  <section id="type">
+    <h2>Typography tokens</h2>
+    <div class="stack stack-sm">
+      <p style="font-size:var(--font-size-xl)">font-size-xl — The quick brown fox</p>
+      <p style="font-size:var(--font-size-lg)">font-size-lg — The quick brown fox</p>
+      <p style="font-size:var(--font-size-md)">font-size-md — The quick brown fox</p>
+      <p style="font-size:var(--font-size-sm)">font-size-sm — The quick brown fox</p>
+      <p>font-family-base, <span class="text-strong">font-weight-semibold</span>, font-weight-regular, line-height-base</p>
+      <p class="mono">font-family-mono — job_4f2a91 · 200 OK</p>
+    </div>
+  </section>
+
+  <section id="space">
+    <h2>Spacing, radius, size and shadow tokens</h2>
+    <div class="stack stack-sm">
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-1)"></div><span class="sg-label">space-1</span></div>
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-2)"></div><span class="sg-label">space-2</span></div>
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-3)"></div><span class="sg-label">space-3</span></div>
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-4)"></div><span class="sg-label">space-4</span></div>
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-5)"></div><span class="sg-label">space-5</span></div>
+      <div class="cluster"><div class="sg-bar" style="width:var(--space-6)"></div><span class="sg-label">space-6</span></div>
+    </div>
+    <div class="cluster cluster-lg">
+      <div class="sg-swatch"><div class="sg-box" style="border-radius:var(--radius-sm)"></div><span class="sg-label">radius-sm</span></div>
+      <div class="sg-swatch"><div class="sg-box" style="border-radius:var(--radius-md)"></div><span class="sg-label">radius-md</span></div>
+      <div class="sg-swatch"><div class="sg-box" style="border-radius:var(--radius-lg)"></div><span class="sg-label">radius-lg</span></div>
+      <div class="sg-swatch"><div class="sg-box" style="border-radius:var(--radius-full)"></div><span class="sg-label">radius-full</span></div>
+      <div class="sg-swatch"><div class="sg-box" style="box-shadow:var(--shadow-md)"></div><span class="sg-label">shadow-md</span></div>
+      <div class="sg-swatch"><div class="sg-box" style="box-shadow:var(--shadow-lg)"></div><span class="sg-label">shadow-lg</span></div>
+    </div>
+    <p class="sg-label">Other tokens: border-width, control-height-sm/md/lg, icon-size, switch-width, avatar-size, sidebar-width, drawer-width, modal-width, toast-width, content-max-width, dropdown-min-width, breakpoint-md, opacity-backdrop, opacity-disabled, z-popup, z-overlay, duration-fast, duration-spin.</p>
+    <div class="stack stack-sm">
+      <div class="sg-chip" style="height:var(--control-height-sm);justify-content:flex-start;padding:0 var(--space-2)">control-height-sm</div>
+      <div class="sg-chip" style="height:var(--control-height-md);justify-content:flex-start;padding:0 var(--space-2)">control-height-md</div>
+      <div class="sg-chip" style="height:var(--control-height-lg);justify-content:flex-start;padding:0 var(--space-2)">control-height-lg</div>
+    </div>
+    <h3>Component alias tokens</h3>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Alias</th><th>Sample</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">button.primary.background / .foreground / .background-hover</td><td><span class="sg-chip" style="background:var(--button-primary-background);color:var(--button-primary-foreground)">Primary</span></td></tr>
+        <tr><td class="mono">button.secondary.background / .foreground / .border / .background-hover</td><td><span class="sg-chip" style="background:var(--button-secondary-background);color:var(--button-secondary-foreground);border-color:var(--button-secondary-border)">Secondary</span></td></tr>
+        <tr><td class="mono">button.ghost.foreground / .background-hover</td><td><span class="sg-chip" style="background:var(--button-ghost-background-hover);color:var(--button-ghost-foreground)">Ghost</span></td></tr>
+        <tr><td class="mono">button.danger.background / .foreground / .background-hover</td><td><span class="sg-chip" style="background:var(--button-danger-background);color:var(--button-danger-foreground)">Danger</span></td></tr>
+        <tr><td class="mono">button.default.radius / .padding-x / .font-size</td><td><span class="btn">Default metrics</span></td></tr>
+        <tr><td class="mono">card.default.background / .border / .radius / .padding / .shadow</td><td><div class="card">Card</div></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="buttons">
+    <h2>Buttons</h2>
+    <div class="cluster">
+      <button class="btn btn-primary">Primary</button>
+      <button class="btn btn-secondary">Secondary</button>
+      <button class="btn btn-ghost">Ghost</button>
+      <button class="btn btn-danger">Danger</button>
+      <button class="btn btn-icon btn-secondary" aria-label="Refresh">&#8635;</button>
+    </div>
+    <div class="cluster"><button class="btn btn-primary btn-sm">Small</button><button class="btn btn-primary">Medium</button><button class="btn btn-primary btn-lg">Large</button><button class="btn btn-icon btn-sm btn-secondary" aria-label="Add">+</button><button class="btn btn-icon btn-lg btn-secondary" aria-label="Add">+</button></div>
+    <div class="cluster"><button class="btn btn-primary" disabled>Disabled primary</button><button class="btn btn-secondary" disabled>Disabled secondary</button><button class="btn btn-danger" disabled>Disabled danger</button><button class="btn btn-ghost" disabled>Disabled ghost</button></div>
+    <p class="text-muted text-sm">Focus state: press Tab to see the <code>:focus-visible</code> ring on any control.</p>
+  </section>
+
+  <section id="forms">
+    <h2>Form controls</h2>
+    <div class="grid grid-2">
+      <div class="field"><label for="f1">Service name</label><input id="f1" class="input" placeholder="e.g. operations-api"><span class="field-hint">Shown in the Services list.</span></div>
+      <div class="field"><label for="f2">Endpoint</label><input id="f2" class="input is-invalid" value="htp:/bad" aria-invalid="true"><span class="field-error">Enter a full URL starting with https://.</span></div>
+      <div class="field"><label for="f3">Disabled input</label><input id="f3" class="input" value="Read only" disabled></div>
+      <div class="field"><label for="f4">Notes</label><textarea id="f4" class="textarea"></textarea></div>
+      <div class="field"><label for="f5">Retry policy</label><select id="f5" class="select"><option>Retry 3 times</option><option>Never retry</option></select></div>
+      <div class="field"><label for="f6">Invalid select</label><select id="f6" class="select is-invalid"><option>Choose…</option></select><span class="field-error">Choose a policy.</span></div>
+      <div class="field"><label for="f7">Disabled select</label><select id="f7" class="select" disabled><option>Locked</option></select></div>
+      <div class="field"><label for="f8">Disabled textarea</label><textarea id="f8" class="textarea" disabled></textarea></div>
+    </div>
+    <div class="cluster cluster-lg">
+      <label class="checkbox"><input type="checkbox"> Unchecked</label>
+      <label class="checkbox"><input type="checkbox" checked> Checked</label>
+      <label class="checkbox"><input type="checkbox" class="is-invalid"> Invalid</label>
+      <label class="checkbox"><input type="checkbox" disabled> Disabled</label>
+      <label class="radio"><input type="radio" name="r1"> Radio</label>
+      <label class="radio"><input type="radio" name="r1" checked> Selected</label>
+      <label class="radio"><input type="radio" name="r2" disabled> Disabled</label>
+      <label class="switch"><input type="checkbox" role="switch"> Off</label>
+      <label class="switch"><input type="checkbox" role="switch" checked> On</label>
+      <label class="switch"><input type="checkbox" role="switch" disabled> Disabled</label>
+    </div>
+  </section>
+
+  <section id="menus">
+    <h2>Dropdown, menu, tabs, accordion</h2>
+    <div class="grid grid-2">
+      <div class="stack stack-sm"><span class="sg-label">.dropdown (open, with checked item)</span>
+        <div class="sg-preview"><div class="dropdown is-open">
+          <button class="btn btn-secondary" aria-haspopup="menu" aria-expanded="true" data-menu>Status: All</button>
+          <div class="dropdown-menu is-open" role="menu">
+            <button class="dropdown-item" role="menuitemcheckbox" aria-checked="true">All</button>
+            <button class="dropdown-item" role="menuitemcheckbox" aria-checked="false">Failed</button>
+            <button class="dropdown-item is-danger" role="menuitem">Cancel all</button>
+            <button class="dropdown-item" role="menuitem" disabled>Disabled</button>
+          </div></div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.dropdown (closed)</span>
+        <div class="sg-preview"><div class="dropdown"><button class="btn btn-secondary" aria-haspopup="menu" aria-expanded="false" data-menu>Closed menu</button><div class="dropdown-menu" role="menu" hidden><button class="dropdown-item">Item</button></div></div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.menu</span>
+        <ul class="menu"><li><a href="#">View logs</a></li><li><button type="button">Retry job</button></li><li><button type="button" class="is-danger">Delete job</button></li></ul></div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true">Selected</button>
+      <button class="tab" role="tab" aria-selected="false">Default</button>
+      <button class="tab" role="tab" aria-selected="false" disabled>Disabled</button>
+    </div>
+    <div class="accordion">
+      <details class="disclosure" open><summary>Open section</summary><div class="disclosure-body">Details for the open item.</div></details>
+      <details class="disclosure"><summary>Closed section</summary><div class="disclosure-body">Hidden details.</div></details>
+    </div>
+    <details class="disclosure card"><summary>Standalone disclosure</summary><div class="disclosure-body">Used on its own for optional detail.</div></details>
+  </section>
+
+  <section id="display">
+    <h2>Card, badge, chip, avatar, divider, table</h2>
+    <div class="grid">
+      <div class="card"><div class="card-header"><h3>Card title</h3><span class="badge badge-success">Healthy</span></div><p class="text-muted">Card body copy.</p></div>
+      <div class="card"><div class="card-header"><h3>Another card</h3><span class="badge badge-danger">Down</span></div><p class="text-muted">Summary metric or entity.</p></div>
+    </div>
+    <div class="cluster"><span class="badge badge-neutral">Neutral</span><span class="badge badge-success">Success</span><span class="badge badge-warning">Warning</span><span class="badge badge-danger">Danger</span></div>
+    <div class="cluster"><span class="chip">Default</span><span class="chip is-selected">Selected</span><span class="chip">Removable <button aria-label="Remove">&times;</button></span></div>
+    <div class="cluster"><span class="avatar">AB</span><span class="avatar">OP</span></div>
+    <hr class="divider">
+    <div class="table-wrap"><table class="table"><thead><tr><th>Job</th><th>Status</th><th>Duration</th></tr></thead><tbody>
+      <tr><td class="mono">job_4f2a91</td><td><span class="badge badge-success">Done</span></td><td>12s</td></tr>
+      <tr><td class="mono">job_77c0be</td><td><span class="badge badge-warning">Retrying</span></td><td>48s</td></tr>
+    </tbody></table></div>
+  </section>
+
+  <section id="overlays">
+    <h2>Overlays (shown open; closed = <code>[hidden]</code>)</h2>
+    <div class="grid grid-2">
+      <div class="stack stack-sm"><span class="sg-label">.backdrop.is-open</span><div class="sg-preview"><div class="backdrop is-open"></div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.modal.is-open</span><div class="sg-preview"><div class="modal is-open" role="dialog" aria-label="Delete job"><div class="modal-header"><h3>Delete job?</h3></div><p>This removes job_4f2a91 and its logs.</p><div class="modal-footer"><button class="btn btn-secondary">Cancel</button><button class="btn btn-danger">Delete job</button></div></div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.drawer.is-open</span><div class="sg-preview"><div class="drawer is-open" role="dialog" aria-label="Job detail"><div class="drawer-header"><h3>Job detail</h3><button class="btn btn-icon btn-ghost btn-sm" aria-label="Close">&times;</button></div><p class="text-muted">Right-side panel; fixed to the right edge in use.</p></div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.toast.is-open</span><div class="sg-preview"><div class="toast is-open" role="status">Job retried.</div></div></div>
+      <div class="stack stack-sm"><span class="sg-label">.tooltip.is-open</span><div class="sg-preview"><span class="tooltip is-open" role="tooltip">Retry this job</span></div></div>
+      <div class="stack stack-sm"><span class="sg-label">Closed (hidden)</span><div class="sg-preview"><div class="modal" hidden>Hidden modal</div><div class="drawer" hidden>Hidden drawer</div><span class="text-muted text-sm">Nothing renders here — all overlays above are hidden.</span></div></div>
+    </div>
+  </section>
+
+  <section id="feedback">
+    <h2>Feedback</h2>
+    <div class="alert alert-info"><span class="alert-title">Info</span>Worker deploy scheduled for tonight.</div>
+    <div class="alert alert-success"><span class="alert-title">Success</span>All services are healthy.</div>
+    <div class="alert alert-warning"><span class="alert-title">Warning</span>Queue depth is above normal.</div>
+    <div class="alert alert-danger"><span class="alert-title">Danger</span>Job failed: worker timed out. Retry or check the worker logs.</div>
+    <div class="empty-state"><h3>No jobs yet</h3><p>Jobs appear here once the worker picks up work.</p><button class="btn btn-primary">Create job</button></div>
+    <div class="grid grid-2"><div class="stack stack-sm"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div><div class="cluster"><span class="spinner" role="status" aria-label="Loading"></span><span class="text-muted">Loading…</span></div></div>
+  </section>
+
+  <section id="layout">
+    <h2>Layout helpers</h2>
+    <p class="sg-label">.stack / .stack-sm / .stack-lg</p>
+    <div class="stack stack-sm"><div class="card">One</div><div class="card">Two</div></div>
+    <p class="sg-label">.cluster / .cluster-lg / .cluster-between</p>
+    <div class="cluster cluster-between"><span class="chip">Left</span><span class="chip">Right</span></div>
+    <p class="sg-label">.grid / .grid-2</p>
+    <div class="grid"><div class="card">A</div><div class="card">B</div><div class="card">C</div></div>
+  </section>
+
+  <section id="guidelines" class="sg-guidelines">
+    <h2>UI guidelines</h2>
+    <p>This product is an operations console for the web app, its operations API and its background worker. Operators use it to check health and act on work in flight.</p>
+
+    <h3>Navigation and information architecture</h3>
+    <ul>
+      <li>Use a left sidebar plus a slim top bar, because operators jump between a few stable areas all day and the sidebar keeps them one click away.</li>
+      <li>Sidebar sections, in order: <strong>Overview</strong> (<code>overview</code>), <strong>Operations</strong> (<code>operations</code>), <strong>Jobs</strong> (<code>jobs</code>), <strong>Settings</strong> (<code>settings</code>). The order follows how often each is used.</li>
+      <li>The top bar holds the brand, the menu button on phones and the <strong>Account</strong> link (<code>account</code>), because account is personal, not a work area.</li>
+      <li>Below the 768px breakpoint the sidebar collapses behind the menu button, so the content gets the full width on a phone.</li>
+      <li>Every screen marks its own section as the current page, so operators always know where they are.</li>
+    </ul>
+
+    <h3>Layout and density</h3>
+    <ul>
+      <li>Data-dense, not spacious: use <code>space-2</code> and <code>space-3</code> inside components and <code>space-4</code> between page sections, because operators scan many rows at once.</li>
+      <li>Page body is one column capped at <code>content-max-width</code>; split into columns with <code>.grid</code>, never fixed widths, so it reflows down to a 375px phone.</li>
+      <li>Tables sit in <code>.table-wrap</code> and scroll sideways on small screens, because wrapping columns hides the data operators compare.</li>
+      <li>Page title is an <code>h1</code> with its primary action on the right in a <code>.cluster-between</code> row, so the main action is always in the same place.</li>
+    </ul>
+
+    <h3>Component usage</h3>
+    <ul>
+      <li><strong>Table</strong> (<code>.table</code>) for any set of records compared across columns (jobs, services); <strong>card</strong> (<code>.card</code>) for one entity or a summary metric; plain <code>.stack</code> list for short, single-line items. Cards hold detail, tables hold comparison.</li>
+      <li>One <code>.btn-primary</code> per view, <code>.btn-secondary</code> for other actions, <code>.btn-ghost</code> for low-emphasis or toolbar actions, so the main action is unmistakable.</li>
+      <li>Destructive actions use <code>.btn-danger</code> and always go through a <code>.modal</code> that names the thing being affected, because they cannot be undone.</li>
+      <li>Job and service state is a <code>.badge</code> (success, warning, danger, neutral), never colour-only text, so state reads at a glance in a dense table.</li>
+      <li>Use <code>.drawer</code> for viewing or editing one record while keeping the list visible; use <code>.modal</code> only for confirmations and short blocking decisions.</li>
+      <li>Use <code>.toast</code> for confirmation of a completed action, <code>.alert</code> for problems that stay on screen, and <code>.empty-state</code> with a next step when a list has no rows.</li>
+      <li>Use <code>.skeleton</code> for lists and cards that are loading and <code>.spinner</code> only inside a button or a small area, because skeletons keep the layout from jumping.</li>
+      <li>Forms use <code>.field</code> with a hint, and show errors with <code>.is-invalid</code> plus an error line, so each problem is next to its cause.</li>
+    </ul>
+
+    <h3>Theme</h3>
+    <ul><li>Light only. Operators work in bright offices and dashboards are shared on screens; one theme halves the design and test surface. Add dark later through new token values, not new classes.</li></ul>
+
+    <h3>Voice and tone</h3>
+    <ul>
+      <li>Plain, direct and calm; sentence case everywhere, because an operator under pressure needs facts, not personality.</li>
+      <li>Buttons are verb + object ("Retry job", "Add service"); never "OK" or "Submit".</li>
+      <li>Errors say what failed and what to do next ("Job failed: worker timed out. Retry or check the worker logs.").</li>
+      <li>Use the product's nouns consistently: job, service, operation, worker; do not rename them between screens.</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

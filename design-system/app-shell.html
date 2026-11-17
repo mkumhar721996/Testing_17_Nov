@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>App shell</title>
+  <link rel="stylesheet" href="tokens.css">
+  <link rel="stylesheet" href="prototype-utils.css">
+  <style>
+    [data-arc-shell] { min-height: 100vh; display: flex; flex-direction: column; }
+    .shell-header { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-bottom: var(--border-width) solid var(--color-border-subtle); background: var(--color-bg); }
+    .shell-brand { display: inline-flex; align-items: center; min-height: var(--control-height-lg, 2.75rem); min-width: var(--control-height-lg, 2.75rem); font-weight: var(--font-weight-semibold); font-size: var(--font-size-lg); color: var(--color-fg); text-decoration: none; margin-right: auto; }
+    .shell-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .shell-nav { display: none; flex-direction: column; gap: var(--space-1); padding: var(--space-2) var(--space-3); background: var(--color-surface); border-bottom: var(--border-width) solid var(--color-border-subtle); }
+    .shell-nav.is-open { display: flex; }
+    .shell-nav a { display: flex; align-items: center; min-height: var(--control-height-lg, 2.75rem); padding: var(--space-2); border-radius: var(--radius-md); color: var(--color-fg); text-decoration: none; }
+    .shell-nav a:hover { background: var(--color-surface-2); }
+    .shell-nav a[aria-current="page"] { background: var(--color-info-bg); color: var(--color-info-fg); font-weight: var(--font-weight-semibold); }
+    .shell-main { flex: 1; min-width: 0; padding: var(--space-3); }
+    .shell-main [data-arc-content] { max-width: var(--content-max-width); margin: 0 auto; }
+    .shell-footer { padding: var(--space-2) var(--space-3); border-top: var(--border-width) solid var(--color-border-subtle); color: var(--color-fg-muted); font-size: var(--font-size-sm); }
+    .shell-menu-btn { display: inline-flex; min-width: var(--control-height-lg, 2.75rem); min-height: var(--control-height-lg, 2.75rem); }
+    .shell-account { min-height: var(--control-height-lg, 2.75rem); min-width: var(--control-height-lg, 2.75rem); }
+    @media (min-width: 48em) {
+      .shell-menu-btn { display: none; }
+      .shell-body { flex-direction: row; }
+      .shell-nav, .shell-nav.is-open { display: flex; flex: none; width: var(--sidebar-width); border-bottom: 0; border-right: var(--border-width) solid var(--color-border-subtle); }
+      .shell-main { padding: var(--space-4); }
+    }
+  </style>
+</head>
+<body>
+  <div data-arc-shell>
+    <header data-arc-shell-part="header" class="shell-header">
+      <button class="btn btn-secondary btn-icon btn-lg shell-menu-btn" type="button" data-toggle="main-nav" aria-controls="main-nav" aria-label="Menu">&#9776;</button>
+      <a class="shell-brand" href="#">Ops Console</a>
+      <a class="btn btn-ghost btn-lg shell-account" href="#" data-nav-key="account"><span class="avatar" aria-hidden="true">OP</span> Account</a>
+    </header>
+    <div class="shell-body">
+      <nav data-arc-shell-part="nav" class="shell-nav" id="main-nav" aria-label="Main">
+        <a href="#" data-nav-key="overview">Overview</a>
+        <a href="#" data-nav-key="operations">Operations</a>
+        <a href="#" data-nav-key="jobs">Jobs</a>
+        <a href="#" data-nav-key="settings">Settings</a>
+      </nav>
+      <main class="shell-main">
+        <div data-arc-content></div>
+      </main>
+    </div>
+    <footer data-arc-shell-part="footer" class="shell-footer">Ops Console &middot; Operations API and background worker</footer>
+  </div>
+</body>
+</html>
