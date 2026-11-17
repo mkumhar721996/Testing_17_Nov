@@ -10,6 +10,7 @@
     "build": "nest build",
     "start": "nest start",
     "start:prod": "node dist/main",
+    "migrate": "pnpm run build && node dist/database/migrate.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "e2e": "playwright test",
@@ -19,6 +20,7 @@
     "@nestjs/common": "^11.1.0",
     "@nestjs/core": "^11.1.0",
     "@nestjs/platform-express": "^11.1.0",
+    "aws-jwt-verify": "^4.0.1",
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
