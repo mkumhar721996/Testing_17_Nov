@@ -33,26 +33,35 @@ export class RestaurantsRepository {
     return (rowCount ?? 0) > 0;
   }
 
-  // The update and its audit entry commit together (ADR-0011).
+  // The update (only if the actor still manages the restaurant) and its audit entry
+  // commit together (ADR-0011). Returns false, writing nothing, when the actor does not.
   async saveDeliveryRadius(
     tenantId: string,
     id: string,
     km: number,
     actorId: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query(
-        'UPDATE restaurants SET delivery_radius_km = $3 WHERE tenant_id = $1 AND id = $2',
-        [tenantId, id, km],
+      const update = await client.query(
+        `UPDATE restaurants SET delivery_radius_km = $3
+          WHERE tenant_id = $1 AND id = $2
+            AND EXISTS (SELECT 1 FROM restaurant_managers m
+                         WHERE m.tenant_id = $1 AND m.restaurant_id = $2 AND m.user_id = $4)`,
+        [tenantId, id, km, actorId],
       );
+      if (update.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return false;
+      }
       await client.query(
         `INSERT INTO audit_log (tenant_id, actor_id, action, entity, entity_id, detail)
          VALUES ($1, $2, 'delivery_radius.set', 'restaurant', $3, $4)`,
         [tenantId, actorId, id, JSON.stringify({ deliveryRadiusKm: km })],
       );
       await client.query('COMMIT');
+      return true;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

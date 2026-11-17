@@ -19,9 +19,11 @@ const repo = {
     tenantId === 't1' && id === 'r1'
       ? { id, name: 'Bistro Lumiere', address: '14 Quay Street', deliveryRadiusKm: radius }
       : null,
-  isManager: async (_t: string, _r: string, userId: string) => userId === 'm1',
+  isManager: async (tenantId: string, restaurantId: string, userId: string) =>
+    tenantId === 't1' && restaurantId === 'r1' && userId === 'm1',
   saveDeliveryRadius: async (_t: string, _id: string, km: number) => {
     radius = km;
+    return true;
   },
   list: async () => [],
 };
@@ -64,8 +66,14 @@ describe('RestaurantsController', () => {
     expect((await put('stranger', { deliveryRadiusKm: 5 })).status).toBe(403);
   });
 
-  it("404 for another tenant's restaurant", async () => {
-    expect((await put('foreign', { deliveryRadiusKm: 5 })).status).toBe(404);
+  it("403 for another tenant's restaurant, the same as for one that does not exist", async () => {
+    expect((await put('foreign', { deliveryRadiusKm: 5 })).status).toBe(403);
+    const missing = await fetch(`${base}/restaurants/nope/delivery-area`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer manager' },
+      body: JSON.stringify({ deliveryRadiusKm: 5 }),
+    });
+    expect(missing.status).toBe(403);
   });
 
   it.each([2.5, 0, 51, '5', null])('400 for %s', async (km) => {

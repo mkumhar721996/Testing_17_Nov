@@ -25,7 +25,7 @@ export class RestaurantsService {
   }
 
   async setDeliveryRadius(user: CurrentUser, restaurantId: string, km: unknown) {
-    await this.requireManaged(user, restaurantId);
+    await this.requireManager(user, restaurantId);
     if (
       typeof km !== 'number' ||
       !Number.isInteger(km) ||
@@ -36,7 +36,10 @@ export class RestaurantsService {
         `Delivery radius must be a whole number from ${MIN_RADIUS_KM} to ${MAX_RADIUS_KM} km`,
       );
     }
-    await this.repo.saveDeliveryRadius(user.tenantId, restaurantId, km, user.userId);
+    // The save re-checks the manager in the same statement, so a manager removed
+    // since the check above cannot still write.
+    const saved = await this.repo.saveDeliveryRadius(user.tenantId, restaurantId, km, user.userId);
+    if (!saved) throw new ForbiddenException('Not a manager of this restaurant');
     return { deliveryRadiusKm: km };
   }
 
@@ -44,12 +47,18 @@ export class RestaurantsService {
     return this.repo.list(user.tenantId, fulfilment);
   }
 
-  private async requireManaged(user: CurrentUser, restaurantId: string) {
-    const restaurant = await this.repo.findRestaurant(user.tenantId, restaurantId);
-    if (!restaurant) throw new NotFoundException('Restaurant not found');
+  // Manager first: a missing and an unmanaged restaurant both answer 403, so callers
+  // cannot probe which restaurant ids exist.
+  private async requireManager(user: CurrentUser, restaurantId: string) {
     if (!(await this.repo.isManager(user.tenantId, restaurantId, user.userId))) {
       throw new ForbiddenException('Not a manager of this restaurant');
     }
+  }
+
+  private async requireManaged(user: CurrentUser, restaurantId: string) {
+    await this.requireManager(user, restaurantId);
+    const restaurant = await this.repo.findRestaurant(user.tenantId, restaurantId);
+    if (!restaurant) throw new NotFoundException('Restaurant not found');
     return restaurant;
   }
 }

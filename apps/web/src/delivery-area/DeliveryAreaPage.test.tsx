@@ -109,6 +109,33 @@ describe('DeliveryAreaPage', () => {
     await waitFor(() => expect(screen.getByLabelText('Delivery radius in km')).toBeInTheDocument())
   })
 
+  it('AC4: a 403 when loading shows the change refused state', async () => {
+    fetchMock.mockImplementationOnce(() => json(403, { message: 'no' }))
+    await open()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Change refused')
+  })
+
+  it('shows an error when loading fails for another reason', async () => {
+    fetchMock.mockImplementationOnce(() => json(500, {}))
+    await open()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Delivery area not loaded')
+  })
+
+  it('the invalid state keeps the saved radius and Cancel restores it', async () => {
+    await open()
+    await save('2.5')
+    expect(await screen.findByText(/Your radius is still 5 km/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(await screen.findByLabelText('Delivery radius in km')).toHaveValue('5')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('shows only one primary button', async () => {
+    await open()
+    await screen.findByText('5 km')
+    expect(document.querySelectorAll('.btn-primary')).toHaveLength(1)
+  })
+
   it('lets the manager change the radius again after saving', async () => {
     await open()
     await save('8')
