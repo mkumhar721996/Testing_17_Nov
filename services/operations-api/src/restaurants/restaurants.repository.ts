@@ -42,6 +42,7 @@ export class RestaurantsRepository {
     actorId: string,
   ): Promise<boolean> {
     const client = await this.pool.connect();
+    let broken = false;
     try {
       await client.query('BEGIN');
       const update = await client.query(
@@ -63,10 +64,11 @@ export class RestaurantsRepository {
       await client.query('COMMIT');
       return true;
     } catch (error) {
-      await client.query('ROLLBACK');
+      // A failed ROLLBACK must not replace the original error; drop the broken connection instead.
+      broken = await client.query('ROLLBACK').then(() => false, () => true);
       throw error;
     } finally {
-      client.release();
+      client.release(broken ? true : undefined);
     }
   }
 

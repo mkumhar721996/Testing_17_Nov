@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { ApiError, type DeliveryArea, getDeliveryArea, saveDeliveryRadius } from './api'
 import { validateRadius } from './validate'
 
@@ -9,6 +9,16 @@ export default function DeliveryAreaPage({ restaurantId }: { restaurantId: strin
   const [view, setView] = useState<View>('form')
   const [input, setInput] = useState('')
   const [saving, setSaving] = useState(false)
+  const noticeRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const returning = useRef(false)
+
+  // Each view is its own tree, so the focused control unmounts on a change; move focus to the new content.
+  useEffect(() => {
+    if (view === 'saved' || view === 'refused') noticeRef.current?.focus()
+    else if (view === 'form' && returning.current) inputRef.current?.focus()
+    returning.current = false
+  }, [view])
 
   useEffect(() => {
     let current = true
@@ -45,6 +55,7 @@ export default function DeliveryAreaPage({ restaurantId }: { restaurantId: strin
 
   function backToForm() {
     setInput(area?.deliveryRadiusKm == null ? '' : String(area.deliveryRadiusKm))
+    returning.current = true
     setView('form')
   }
 
@@ -59,7 +70,7 @@ export default function DeliveryAreaPage({ restaurantId }: { restaurantId: strin
     return (
       <div className="stack">
         {header}
-        <div className="alert alert-danger" role="alert">
+        <div className="alert alert-danger" role="alert" tabIndex={-1} ref={noticeRef}>
           <span className="alert-title">Change refused</span>
           <span>
             You are not a manager of this restaurant, so you can't set or change its delivery
@@ -131,7 +142,7 @@ export default function DeliveryAreaPage({ restaurantId }: { restaurantId: strin
       <div className="stack">
         {header}
         {addressCard}
-        <div className="alert alert-success" role="status">
+        <div className="alert alert-success" role="status" tabIndex={-1} ref={noticeRef}>
           <span className="alert-title">Delivery radius saved</span>
           <span>Your restaurant delivers within {radius} km. This replaces the previous radius.</span>
         </div>
@@ -195,6 +206,7 @@ export default function DeliveryAreaPage({ restaurantId }: { restaurantId: strin
             <input
               className={`input${invalid ? ' is-invalid' : ''}`}
               id="radius"
+              ref={inputRef}
               inputMode="numeric"
               value={input}
               onChange={(event) => setInput(event.target.value)}
