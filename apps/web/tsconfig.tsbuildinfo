@@ -1,1 +1,1 @@
-{"root":["./src/App.test.tsx","./src/App.tsx","./src/main.tsx","./src/test-setup.ts","./vite.config.ts","./playwright.config.ts","./e2e/app.spec.ts"],"version":"5.9.3"}
+{"root":["./src/App.test.tsx","./src/App.tsx","./src/main.tsx","./src/test-setup.ts","./src/auth/session.ts","./src/delivery-area/DeliveryAreaPage.test.tsx","./src/delivery-area/DeliveryAreaPage.tsx","./src/delivery-area/api.ts","./src/delivery-area/validate.test.ts","./src/delivery-area/validate.ts","./src/shell/AppShell.tsx","./vite.config.ts","./playwright.config.ts","./e2e/app.spec.ts"],"version":"5.9.3"}
