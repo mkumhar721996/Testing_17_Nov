@@ -1,0 +1,17 @@
+version: 1
+components:
+  comp_web_app:
+    name: Web App
+    kind: web_ui
+  comp_operations_api:
+    name: Operations API
+    kind: api_service
+  comp_background_worker:
+    name: Background Worker
+    kind: worker
+  comp_relational_database:
+    name: Relational Database
+    kind: infrastructure
+  comp_identity_provider:
+    name: Identity Provider
+    kind: managed_service
