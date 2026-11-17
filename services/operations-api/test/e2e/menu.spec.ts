@@ -199,7 +199,7 @@ test('AC16/17 only empty sections are removed', async ({ request }) => {
 
 test('the database rejects a zero price and audits every write', async ({ request }) => {
   const sid = await addSection(request);
-  await addItem(request, sid);
+  const iid = await addItem(request, sid);
   await expect(
     pool.query(
       `INSERT INTO menu_items (id, tenant_id, restaurant_id, section_id, name, price)
@@ -207,8 +207,12 @@ test('the database rejects a zero price and audits every write', async ({ reques
     ),
   ).rejects.toThrow();
   const { rows } = await pool.query(
-    "SELECT actor_sub FROM audit_log WHERE entity IN ('menu_section', 'menu_item')",
+    `SELECT action, entity, entity_id, actor_sub FROM audit_log
+     WHERE entity_id = ANY($1::uuid[]) ORDER BY id`,
+    [[sid, iid]],
   );
-  expect(rows.length).toBeGreaterThanOrEqual(2);
-  expect(rows[0].actor_sub).toBe('manager-a');
+  expect(rows).toEqual([
+    { action: 'create', entity: 'menu_section', entity_id: sid, actor_sub: 'manager-a' },
+    { action: 'create', entity: 'menu_item', entity_id: iid, actor_sub: 'manager-a' },
+  ]);
 });
