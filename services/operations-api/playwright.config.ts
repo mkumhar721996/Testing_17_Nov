@@ -6,9 +6,10 @@ export default defineConfig({
   testDir: './test/e2e',
   use: { baseURL: `http://127.0.0.1:${port}` },
   webServer: {
-    command: 'pnpm run build && node dist/main',
+    // Migrations run first when a database is configured; the data specs need one.
+    command: 'pnpm run build && ([ -z "$DATABASE_URL" ] || node dist/database/migrate) && node dist/main',
     url: `http://127.0.0.1:${port}/health`,
-    env: { HOST: '127.0.0.1', PORT: String(port) },
+    env: { HOST: '127.0.0.1', PORT: String(port), AUTH_DEV_HEADERS: 'true' },
     reuseExistingServer: false,
     timeout: 120_000,
   },
