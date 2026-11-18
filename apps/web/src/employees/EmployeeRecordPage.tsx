@@ -34,9 +34,9 @@ const toValues = (r: EmployeeRecord): EmployeeFormValues => ({
 const isForbidden = (err: unknown) => err instanceof ApiError && err.status === 403
 
 type Load = 'loading' | 'ready' | 'forbidden' | 'error'
-type Props = { employeeId: string | 'new'; onManageDepartments: () => void }
+type Props = { employeeId: string | 'new'; onManageDepartments: () => void; onSaved?: (employeeId: string) => void }
 
-export function EmployeeRecordPage({ employeeId, onManageDepartments }: Props) {
+export function EmployeeRecordPage({ employeeId, onManageDepartments, onSaved }: Props) {
   const [load, setLoad] = useState<Load>('loading')
   const [record, setRecord] = useState<EmployeeRecord | null>(null)
   const [values, setValues] = useState<EmployeeFormValues>(BLANK)
@@ -87,6 +87,7 @@ export function EmployeeRecordPage({ employeeId, onManageDepartments }: Props) {
         const created = await createEmployee(values)
         setRecord(created)
         setValues(toValues(created))
+        onSaved?.(created.id)
         setToast(`${created.fullName} created. The record shows the new details.`)
       } else {
         const { managerId, ...rest } = values

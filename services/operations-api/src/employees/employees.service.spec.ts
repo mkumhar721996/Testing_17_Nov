@@ -183,3 +183,59 @@ describe('tenant isolation', () => {
     expect(await service.options(hr)).toEqual([{ id: 'ana', fullName: 'Ana Costa' }]);
   });
 });
+
+describe('database errors are mapped, not surfaced as 500s', () => {
+  const pgError = (code: string, constraint?: string) => Object.assign(new Error('pg'), { code, constraint });
+
+  function failing(method: 'insert' | 'update' | 'departmentExists', err: Error) {
+    const { store, validInput } = setup();
+    const inner = new InMemoryEmployeesRepository(store);
+    const repo = Object.create(inner) as InMemoryEmployeesRepository;
+    repo.transaction = (work) =>
+      inner.transaction((tx) => work({ ...tx, [method]: async () => Promise.reject(err) }));
+    return { service: new EmployeesService(repo), validInput };
+  }
+
+  it('maps a foreign-key violation on insert to a 422 on the department', async () => {
+    const { service, validInput } = failing('insert', pgError('23503', 'employees_department_id_fkey'));
+    await expect(service.create(hr, validInput)).rejects.toMatchObject({
+      status: 422,
+      fieldErrors: { departmentId: expect.any(String) },
+    });
+  });
+
+  it('maps a foreign-key violation on update to a 422 on the manager', async () => {
+    const { service } = failing('update', pgError('23503', 'employees_manager_id_fkey'));
+    await expect(service.update(hr, 'ana', { managerId: 'ana2', jobTitle: 'x' })).rejects.toMatchObject({
+      status: 422,
+      fieldErrors: { managerId: expect.any(String) },
+    });
+  });
+
+  it('treats a malformed id in the body as an unknown reference (422)', async () => {
+    const { service, validInput } = failing('departmentExists', pgError('22P02'));
+    await expect(service.create(hr, validInput)).rejects.toMatchObject({
+      status: 422,
+      fieldErrors: { departmentId: expect.any(String) },
+    });
+  });
+
+  it('rethrows unrelated database errors', async () => {
+    const { service, validInput } = failing('insert', pgError('40001'));
+    await expect(service.create(hr, validInput)).rejects.toMatchObject({ code: '40001' });
+  });
+});
+
+describe('malformed employee id in the path', () => {
+  it('is a 404, not a 500', async () => {
+    const { store } = setup();
+    const inner = new InMemoryEmployeesRepository(store);
+    const bad = Object.assign(new Error('invalid input syntax for type uuid'), { code: '22P02' });
+    const repo = Object.create(inner) as InMemoryEmployeesRepository;
+    repo.get = () => Promise.reject(bad);
+    repo.transaction = (work) => inner.transaction((tx) => work({ ...tx, employeeExists: () => Promise.reject(bad) }));
+    const service = new EmployeesService(repo);
+    await expect(service.get(hr, 'not-a-uuid')).rejects.toMatchObject({ status: 404 });
+    await expect(service.update(hr, 'not-a-uuid', { jobTitle: 'x' })).rejects.toMatchObject({ status: 404 });
+  });
+});
