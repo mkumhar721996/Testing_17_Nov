@@ -5,6 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // The design-system stylesheets live at the repository root, outside apps/web.
+  server: { fs: { allow: ['../..'] } },
   test: {
     environment: 'jsdom',
     globals: true,

@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Operations API - market overview
+  version: 1.0.0
+paths:
+  /market/overview:
+    get:
+      summary: Latest stored market overview (read-only)
+      responses:
+        '200':
+          description: The latest snapshot written by the Background Worker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketOverview'
+        '503':
+          description: No snapshot has been stored yet
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [error]
+                properties:
+                  error:
+                    type: string
+                    example: market data unavailable
+components:
+  schemas:
+    MarketOverview:
+      type: object
+      required: [stats, gainers, losers, news, asOf]
+      properties:
+        stats:
+          type: array
+          items:
+            type: object
+            required: [key, label, value, changePct]
+            properties:
+              key: { type: string, enum: [sp500, nasdaq, dow, volume] }
+              label: { type: string }
+              value: { type: string }
+              changePct: { type: number, nullable: true }
+        gainers:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: '#/components/schemas/Mover' }
+        losers:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: { $ref: '#/components/schemas/Mover' }
+        news:
+          type: array
+          items:
+            type: object
+            required: [id, headline, publishedAt]
+            properties:
+              id: { type: string }
+              headline: { type: string }
+              publishedAt: { type: string, format: date-time }
+        asOf: { type: string, format: date-time }
+    Mover:
+      type: object
+      required: [symbol, changePct]
+      properties:
+        symbol: { type: string }
+        changePct: { type: number }
