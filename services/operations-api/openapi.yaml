@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 1.0.0
+paths:
+  /departments:
+    get:
+      summary: List the tenant's departments with employee counts (any signed-in user)
+      responses:
+        '200': { description: Departments, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Department' } } } } }
+        '401': { description: Not signed in }
+    post:
+      summary: Add a department (HR only)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DepartmentName' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Department' } } } }
+        '400': { description: Blank name }
+        '401': { description: Not signed in }
+        '403': { description: Not HR }
+        '409': { description: A department with that name exists }
+  /departments/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      summary: Rename a department (HR only)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DepartmentName' } } } }
+      responses:
+        '200': { description: Renamed, content: { application/json: { schema: { $ref: '#/components/schemas/Department' } } } }
+        '400': { description: Blank name }
+        '403': { description: Not HR }
+        '404': { description: Not found in this tenant }
+        '409': { description: A department with that name exists }
+    delete:
+      summary: Remove a department that has no employees (HR only)
+      responses:
+        '204': { description: Removed }
+        '403': { description: Not HR }
+        '404': { description: Not found in this tenant }
+        '409': { description: Employees are assigned (code DEPARTMENT_HAS_EMPLOYEES) }
+  /employees/options:
+    get:
+      summary: Employees that can be chosen as a manager (HR only)
+      responses:
+        '200': { description: Options, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ManagerOption' } } } } }
+        '403': { description: Not HR }
+  /employees:
+    post:
+      summary: Create an employee record (HR only)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/EmployeeInput' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/EmployeeRecord' } } } }
+        '403': { description: Not HR }
+        '422': { description: Required field missing or unknown department/manager, content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } } }
+  /employees/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: Read an employee record (HR only)
+      responses:
+        '200': { description: Record, content: { application/json: { schema: { $ref: '#/components/schemas/EmployeeRecord' } } } }
+        '403': { description: Not HR }
+        '404': { description: Not found in this tenant }
+    patch:
+      summary: Change an employee record; emergencyContacts, when present, replaces the list (HR only)
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/EmployeeInput' } } } }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: '#/components/schemas/EmployeeRecord' } } } }
+        '403': { description: Not HR }
+        '404': { description: Not found in this tenant }
+        '422': { description: Invalid, content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } } }
+components:
+  schemas:
+    DepartmentName:
+      type: object
+      required: [name]
+      properties: { name: { type: string } }
+    Department:
+      type: object
+      required: [id, name, employeeCount]
+      properties: { id: { type: string }, name: { type: string }, employeeCount: { type: integer } }
+    ManagerOption:
+      type: object
+      required: [id, fullName]
+      properties: { id: { type: string }, fullName: { type: string } }
+    EmergencyContact:
+      type: object
+      required: [name, relationship, phone]
+      properties: { name: { type: string }, relationship: { type: string }, phone: { type: string } }
+    EmployeeInput:
+      type: object
+      description: On create fullName, jobTitle, departmentId, managerId and startDate are required; on patch every field is optional.
+      properties:
+        fullName: { type: string }
+        jobTitle: { type: string }
+        departmentId: { type: string }
+        managerId: { type: string }
+        startDate: { type: string, format: date }
+        dateOfBirth: { type: string, format: date, nullable: true }
+        workEmail: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        emergencyContacts: { type: array, items: { $ref: '#/components/schemas/EmergencyContact' } }
+    EmployeeRecord:
+      type: object
+      required: [id, fullName, jobTitle, startDate, department, emergencyContacts]
+      properties:
+        id: { type: string }
+        fullName: { type: string }
+        dateOfBirth: { type: string, format: date, nullable: true }
+        workEmail: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        jobTitle: { type: string }
+        startDate: { type: string, format: date }
+        department: { type: object, required: [id, name], properties: { id: { type: string }, name: { type: string } } }
+        manager: { type: object, nullable: true, properties: { id: { type: string }, fullName: { type: string } } }
+        emergencyContacts: { type: array, items: { $ref: '#/components/schemas/EmergencyContact' } }
+    ValidationError:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        fieldErrors: { type: object, additionalProperties: { type: string } }

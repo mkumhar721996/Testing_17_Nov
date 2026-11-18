@@ -10,6 +10,7 @@
     "build": "nest build",
     "start": "nest start",
     "start:prod": "node dist/main",
+    "migrate": "node dist/database/migrate",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "e2e": "playwright test",

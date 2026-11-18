@@ -1,7 +1,26 @@
+import { useState } from 'react'
+import { DepartmentsPage } from './departments/DepartmentsPage'
+import { EmployeeRecordPage } from './employees/EmployeeRecordPage'
+import { AppShell } from './shell/AppShell'
+
+type View = 'employee' | 'departments'
+
 export default function App() {
+  const [view, setView] = useState<View>('employee')
+  // The employee being worked on survives a visit to Departments; a created record replaces 'new'.
+  const [employeeId, setEmployeeId] = useState<string | 'new'>('new')
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-50">
-      <h1 className="text-3xl font-bold text-slate-900">Web App</h1>
-    </main>
+    <AppShell current="settings">
+      {view === 'employee' ? (
+        <EmployeeRecordPage
+          employeeId={employeeId}
+          onSaved={setEmployeeId}
+          onManageDepartments={() => setView('departments')}
+        />
+      ) : (
+        <DepartmentsPage onBack={() => setView('employee')} />
+      )}
+    </AppShell>
   )
 }
