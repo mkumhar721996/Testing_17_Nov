@@ -4,6 +4,9 @@ import * as departments from '../api/departments'
 import * as employees from '../api/employees'
 import { EmployeeRecordPage } from './EmployeeRecordPage'
 
+import * as documentsApi from '../api/documents'
+
+vi.mock('../api/documents')
 vi.mock('../api/departments')
 vi.mock('../api/employees')
 const emp = vi.mocked(employees)
@@ -198,9 +201,28 @@ describe('EmployeeRecordPage: new record', () => {
     expect(await screen.findByText("You can't edit this record")).toBeInTheDocument()
   })
 
+  it('has no tabs on a new record', async () => {
+    render(<EmployeeRecordPage employeeId="new" {...props} />)
+    await screen.findByRole('heading', { name: 'New employee record' })
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
+  })
+
   it('marks contact details and emergency contacts optional', async () => {
     render(<EmployeeRecordPage employeeId="new" {...props} />)
     expect(await screen.findByRole('heading', { name: 'New employee record' })).toBeInTheDocument()
     expect(screen.getAllByText('Optional')).toHaveLength(2)
+  })
+})
+
+describe('EmployeeRecordPage: existing record tabs', () => {
+  it('shows Details by default and the documents panel on the Documents tab', async () => {
+    vi.mocked(documentsApi.listDocuments).mockResolvedValue({ documents: [], canUpload: true })
+    render(<EmployeeRecordPage employeeId="e1" {...props} />)
+    expect(await screen.findByRole('tab', { name: 'Details' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByLabelText('Full name')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'Documents' }))
+    expect(await screen.findByText('No documents on this record yet')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument()
+    expect(documentsApi.listDocuments).toHaveBeenCalledWith('e1')
   })
 })

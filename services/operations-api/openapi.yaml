@@ -68,8 +68,60 @@ paths:
         '403': { description: Not HR }
         '404': { description: Not found in this tenant }
         '422': { description: Invalid, content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } } }
+  /employees/{employeeId}/documents:
+    parameters:
+      - { name: employeeId, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: List an employee's documents (HR, or the employee for their own record)
+      responses:
+        '200': { description: Documents and whether the caller may upload, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentList' } } } }
+        '403': { description: Neither HR nor that employee }
+        '404': { description: Employee not found in this tenant }
+    post:
+      summary: Upload a document (HR only). PDF, JPG or PNG, at most 10 MB.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [docType, file]
+              properties:
+                docType: { type: string, enum: [contract, id, certificate] }
+                file: { type: string, format: binary }
+      responses:
+        '201': { description: Stored }
+        '403': { description: Not HR }
+        '404': { description: Employee not found in this tenant }
+        '422': { description: Missing file, unknown type, file type not allowed or file too large, content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } } }
+  /employees/{employeeId}/documents/{id}/content:
+    parameters:
+      - { name: employeeId, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: Download a document (HR, or the employee for their own record)
+      responses:
+        '200': { description: The file, content: { application/pdf: { schema: { type: string, format: binary } }, image/jpeg: { schema: { type: string, format: binary } }, image/png: { schema: { type: string, format: binary } } } }
+        '403': { description: Neither HR nor that employee }
+        '404': { description: Employee or document not found in this tenant }
 components:
   schemas:
+    DocumentList:
+      type: object
+      required: [documents, canUpload]
+      properties:
+        canUpload: { type: boolean }
+        documents:
+          type: array
+          items:
+            type: object
+            required: [id, docType, fileName, format, uploadedAt]
+            properties:
+              id: { type: string }
+              docType: { type: string, enum: [contract, id, certificate] }
+              fileName: { type: string }
+              format: { type: string, enum: [PDF, JPG, PNG] }
+              uploadedAt: { type: string, format: date-time }
     DepartmentName:
       type: object
       required: [name]
