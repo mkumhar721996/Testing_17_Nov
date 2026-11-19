@@ -16,13 +16,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { SignedInGuard } from '../auth/hr.guard';
+import { HrGuard, SignedInGuard } from '../auth/hr.guard';
 import { CurrentPrincipal, type Principal } from '../auth/principal';
 import { ApiError } from '../common/api-error';
 import { MAX_BYTES, SIZE_ERROR, type UploadedFile as UploadedDocument } from './document.validation';
 import { DocumentsService } from './documents.service';
 
-/** A file far past the limit is cut off by multer; answer it like any other oversize file. */
 /** The part of the Express response used here (the Express types are not a direct dependency). */
 interface Response {
   status(code: number): Response;
@@ -31,6 +30,7 @@ interface Response {
   send(body: Buffer): void;
 }
 
+/** A file far past the limit is cut off by multer; answer it like any other oversize file. */
 @Catch(PayloadTooLargeException)
 class OversizeFilter implements ExceptionFilter {
   catch(_: PayloadTooLargeException, host: ArgumentsHost) {
@@ -50,7 +50,9 @@ export class DocumentsController {
   }
 
   // One byte over the maximum, so an oversize file reaches validation and gets the size message.
+  // The HR guard runs before the file interceptor, so a non-HR caller gets 403 without the body being parsed.
   @Post()
+  @UseGuards(HrGuard)
   @UseFilters(OversizeFilter)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_BYTES + 1 } }))
   async upload(
