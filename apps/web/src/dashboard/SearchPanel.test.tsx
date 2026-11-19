@@ -46,10 +46,51 @@ describe('SearchPanel', () => {
     type('Destination', 'Li')
     const list = screen.getByRole('listbox', { name: 'Matching places' })
     const options = within(list).getAllByRole('option')
-    expect(options.map((o) => o.textContent)).toEqual(['LisbonPortugal', 'LiverpoolUnited Kingdom'])
+    expect(options.map((o) => o.textContent)).toEqual(['LisbonPortugal', 'LiverpoolUnited Kingdom', 'BerlinGermany'])
     fireEvent.click(options[1])
     expect(screen.getByLabelText('Destination')).toHaveValue('Liverpool')
     expect(screen.queryByRole('listbox')).toBeNull()
+  })
+
+  it('suggests a place from the middle of its name', () => {
+    render(<SearchPanel today="2026-11-19" onSearch={vi.fn()} />)
+    type('Destination', 'pool')
+    expect(within(screen.getByRole('listbox')).getAllByRole('option')).toHaveLength(1)
+  })
+
+  it('shows no suggestions for unknown text', () => {
+    render(<SearchPanel today="2026-11-19" onSearch={vi.fn()} />)
+    type('Destination', 'Atlantis')
+    expect(screen.queryByRole('listbox')).toBeNull()
+  })
+
+  it('allows a one-day trip where end equals start', () => {
+    const onSearch = setup('Lisbon', '2026-12-10', '2026-12-10')
+    search()
+    expect(onSearch).toHaveBeenCalledTimes(1)
+  })
+
+  it('allows a start date of today', () => {
+    const onSearch = setup('Lisbon', '2026-11-19', '2026-11-20')
+    search()
+    expect(onSearch).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses a search where the start date is invalid, then clears the message once fixed', () => {
+    const onSearch = setup('Lisbon', '2026-11-18', '2026-11-25')
+    search()
+    expect(screen.getByLabelText('Start date')).toHaveAttribute('aria-invalid', 'true')
+    type('Start date', '2026-12-01')
+    type('End date', '2026-12-05')
+    search()
+    expect(screen.getByLabelText('Start date')).not.toHaveAttribute('aria-invalid')
+    expect(onSearch).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables Search again when a field is cleared', () => {
+    setup()
+    type('End date', '')
+    expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled()
   })
 
   it('refuses a start date before today with a message at the field', () => {

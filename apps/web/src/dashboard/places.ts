@@ -13,5 +13,5 @@ export const KNOWN_PLACES: Place[] = [
 export function matchPlaces(text: string): Place[] {
   const q = text.trim().toLowerCase()
   if (!q) return []
-  return KNOWN_PLACES.filter((p) => p.name.toLowerCase().startsWith(q))
+  return KNOWN_PLACES.filter((p) => p.name.toLowerCase().includes(q))
 }
