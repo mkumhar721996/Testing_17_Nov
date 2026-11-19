@@ -40,3 +40,14 @@ export async function tryUpdateAudit(tenantId: string): Promise<string | null> {
     await pool.end();
   }
 }
+
+/** Counts the stored documents for a tenant. */
+export async function documentCount(tenantId: string): Promise<number> {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  try {
+    const res = await pool.query('select count(*)::int as n from employee_documents where tenant_id = $1', [tenantId]);
+    return res.rows[0].n;
+  } finally {
+    await pool.end();
+  }
+}

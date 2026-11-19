@@ -9,7 +9,15 @@ import {
   type EmployeesTx,
 } from '../employees/employees.repository';
 
+import {
+  DocumentsRepository,
+  FORMATS,
+  type DocumentsTx,
+  type NewDocument,
+} from '../documents/documents.repository';
+
 type Dept = { id: string; tenantId: string; name: string };
+type Doc = NewDocument & { id: string; tenantId: string; employeeId: string; uploadedAt: Date };
 type Emp = { id: string; tenantId: string; fields: EmployeeFields; contacts: EmergencyContactInput[] };
 
 /** Shared in-memory state behind both repositories, so specs can observe cross-aggregate effects. */
@@ -17,6 +25,21 @@ export class InMemoryStore {
   departments: Dept[] = [];
   employees: Emp[] = [];
   audit: AuditEntry[] = [];
+  documents: Doc[] = [];
+
+  seedDocument(tenantId: string, employeeId: string, id: string, fileName: string, docType: NewDocument['docType'] = 'contract') {
+    this.documents.push({
+      id,
+      tenantId,
+      employeeId,
+      docType,
+      fileName,
+      contentType: 'application/pdf',
+      content: Buffer.from('%PDF-seed'),
+      uploadedBy: 'seed',
+      uploadedAt: new Date('2025-02-02T00:00:00Z'),
+    });
+  }
 
   seedDepartment(tenantId: string, id: string, name: string) {
     this.departments.push({ id, tenantId, name });
@@ -123,6 +146,50 @@ export class InMemoryEmployeesRepository extends EmployeesRepository {
         find(t, id).contacts = contacts.map((c) => ({ ...c }));
       },
       get: async (t, id) => s.record(t, id),
+      audit: async (entry) => {
+        s.audit.push(entry);
+      },
+    });
+  }
+}
+
+export class InMemoryDocumentsRepository extends DocumentsRepository {
+  constructor(private readonly store: InMemoryStore) {
+    super();
+  }
+
+  private hasEmployee(t: string, id: string) {
+    return this.store.employees.some((e) => e.tenantId === t && e.id === id);
+  }
+
+  async employeeExists(tenantId: string, employeeId: string) {
+    return this.hasEmployee(tenantId, employeeId);
+  }
+
+  async list(tenantId: string, employeeId: string) {
+    return this.store.documents
+      .filter((d) => d.tenantId === tenantId && d.employeeId === employeeId)
+      .map((d) => ({
+        id: d.id,
+        docType: d.docType,
+        fileName: d.fileName,
+        format: FORMATS[d.contentType],
+        uploadedAt: d.uploadedAt.toISOString(),
+      }));
+  }
+
+  async getContent(tenantId: string, employeeId: string, id: string) {
+    const d = this.store.documents.find((x) => x.tenantId === tenantId && x.employeeId === employeeId && x.id === id);
+    return d ? { fileName: d.fileName, contentType: d.contentType, content: d.content } : null;
+  }
+
+  async transaction<T>(work: (tx: DocumentsTx) => Promise<T>): Promise<T> {
+    const s = this.store;
+    return work({
+      employeeExists: async (t, id) => this.hasEmployee(t, id),
+      insert: async (t, employeeId, id, doc) => {
+        s.documents.push({ ...doc, id, tenantId: t, employeeId, uploadedAt: new Date() });
+      },
       audit: async (entry) => {
         s.audit.push(entry);
       },

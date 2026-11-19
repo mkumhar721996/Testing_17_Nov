@@ -3,6 +3,7 @@ import { ApiError } from '../api/client'
 import { listDepartments, type Department } from '../api/departments'
 import { createEmployee, getEmployee, listManagerOptions, updateEmployee, type EmployeeRecord, type ManagerOption } from '../api/employees'
 import { Toast } from '../components/Toast'
+import { EmployeeDocumentsPanel } from './EmployeeDocumentsPanel'
 import { EmergencyContactModal } from './EmergencyContactModal'
 import { EmployeeForm, FIELD_IDS, type FieldErrors } from './EmployeeForm'
 import { validateEmployeeForm, type EmployeeFormValues, type RequiredField } from './employeeValidation'
@@ -34,6 +35,11 @@ const toValues = (r: EmployeeRecord): EmployeeFormValues => ({
 const isForbidden = (err: unknown) => err instanceof ApiError && err.status === 403
 
 type Load = 'loading' | 'ready' | 'forbidden' | 'error'
+type Tab = 'details' | 'documents'
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'details', label: 'Details' },
+  { id: 'documents', label: 'Documents' },
+]
 type Props = { employeeId: string | 'new'; onManageDepartments: () => void; onSaved?: (employeeId: string) => void }
 
 export function EmployeeRecordPage({ employeeId, onManageDepartments, onSaved }: Props) {
@@ -46,6 +52,7 @@ export function EmployeeRecordPage({ employeeId, onManageDepartments, onSaved }:
   const [saving, setSaving] = useState(false)
   const [contactEdit, setContactEdit] = useState<{ index: number | null } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [tab, setTab] = useState<Tab>('details')
   const clearToast = useCallback(() => setToast(null), [])
 
   useEffect(() => {
@@ -167,6 +174,19 @@ export function EmployeeRecordPage({ employeeId, onManageDepartments, onSaved }:
         </button>
       </div>
       {isNew && <p className="lead">Name and job details are required. Contact details and emergency contacts can be added now or later.</p>}
+      {!isNew && (
+        <div className="tabs" role="tablist" aria-label="Employee record">
+          {TABS.map((t) => (
+            <button key={t.id} type="button" role="tab" className="tab" aria-selected={tab === t.id} onClick={() => setTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {!isNew && tab === 'documents' ? (
+        <EmployeeDocumentsPanel employeeId={record.id} employeeName={record.fullName} />
+      ) : (
+        <>
       {Object.keys(errors).length > 0 && (
         <div className="alert alert-danger" role="alert">
           <div className="alert-title">The record was not saved.</div>
@@ -192,6 +212,8 @@ export function EmployeeRecordPage({ employeeId, onManageDepartments, onSaved }:
           onSave={saveContact}
           onClose={() => setContactEdit(null)}
         />
+      )}
+        </>
       )}
       {toast && <Toast message={toast} onDone={clearToast} />}
     </div>

@@ -16,18 +16,32 @@ export function getAccessToken(): string | null {
 
 type Init = { method?: string; body?: unknown }
 
-/** Calls the Operations API with JSON and the bearer token; throws ApiError on a non-2xx answer. */
-export async function apiFetch<T = unknown>(path: string, init: Init = {}): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+function authHeaders(): Record<string, string> {
   const token = getAccessToken()
-  if (token) headers.Authorization = `Bearer ${token}`
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+/**
+ * Calls the Operations API with JSON and the bearer token; throws ApiError on a non-2xx answer.
+ * A FormData body is sent as it is, so the browser sets the multipart content type and boundary.
+ */
+export async function apiFetch<T = unknown>(path: string, init: Init = {}): Promise<T> {
+  const multipart = init.body instanceof FormData
+  const headers: Record<string, string> = { ...(multipart ? {} : { 'Content-Type': 'application/json' }), ...authHeaders() }
   const res = await fetch(`${baseUrl()}${path}`, {
     method: init.method ?? 'GET',
     headers,
-    body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    body: init.body === undefined ? undefined : multipart ? (init.body as FormData) : JSON.stringify(init.body),
   })
   const text = await res.text()
   const body = text ? JSON.parse(text) : undefined
   if (!res.ok) throw new ApiError(res.status, body)
   return body as T
+}
+
+/** Fetches a file with the bearer token (a plain link cannot send it); throws ApiError on a non-2xx answer. */
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  const res = await fetch(`${baseUrl()}${path}`, { headers: authHeaders() })
+  if (!res.ok) throw new ApiError(res.status, undefined)
+  return res.blob()
 }
