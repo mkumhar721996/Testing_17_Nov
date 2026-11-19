@@ -1,0 +1,14 @@
+/* Market overview classes from the approved design; tokens only. */
+.stat-value { margin: 0; font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); }
+.stat-label { margin: 0; color: var(--color-fg-muted); font-size: var(--font-size-sm); }
+.stats { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--dropdown-min-width)), 1fr)); }
+.dash { display: grid; gap: var(--space-3); grid-template-columns: minmax(0, 1fr); margin-top: var(--space-4); }
+@media (min-width: 64em) { .dash { grid-template-columns: minmax(0, 1fr) var(--toast-width); } }
+.mover { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); padding: var(--space-2) 0; border-bottom: var(--border-width) solid var(--color-border-subtle); }
+.mover:last-child { border-bottom: 0; }
+.news-item { padding: var(--space-2) 0; border-bottom: var(--border-width) solid var(--color-border-subtle); overflow-wrap: anywhere; }
+.news-item:last-child { border-bottom: 0; }
+.news-item p { margin: 0; }
+.sub { margin: var(--space-3) 0 var(--space-1); font-size: var(--font-size-md); }
+.sk-row { height: var(--space-4); margin-bottom: var(--space-2); }
+.sk-stat { height: var(--space-6); }

@@ -9,7 +9,15 @@ const SECTIONS = [
 
 export type SectionId = (typeof SECTIONS)[number]['id']
 
-export function AppShell({ current, children }: { current: SectionId; children: ReactNode }) {
+export function AppShell({
+  current,
+  onNavigate,
+  children,
+}: {
+  current: SectionId
+  onNavigate?: (id: SectionId) => void
+  children: ReactNode
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -38,7 +46,15 @@ export function AppShell({ current, children }: { current: SectionId; children: 
       <div className="shell-body">
         <nav className={open ? 'shell-nav is-open' : 'shell-nav'} id="main-nav" aria-label="Main">
           {SECTIONS.map((s) => (
-            <a key={s.id} href="#" aria-current={s.id === current ? 'page' : undefined}>
+            <a
+              key={s.id}
+              href="#"
+              aria-current={s.id === current ? 'page' : undefined}
+              onClick={(e) => {
+                e.preventDefault()
+                onNavigate?.(s.id)
+              }}
+            >
               {s.label}
             </a>
           ))}

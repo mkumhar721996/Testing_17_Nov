@@ -18,6 +18,17 @@ describe('AppShell', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
   })
 
+  it('reports the section picked in the navigation', () => {
+    const onNavigate = vi.fn()
+    render(
+      <AppShell current="overview" onNavigate={onNavigate}>
+        x
+      </AppShell>,
+    )
+    fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
+    expect(onNavigate).toHaveBeenCalledWith('settings')
+  })
+
   it('opens and closes the navigation from the menu button', () => {
     render(<AppShell current="settings">x</AppShell>)
     const button = screen.getByRole('button', { name: 'Menu' })

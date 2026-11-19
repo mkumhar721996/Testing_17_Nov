@@ -3,6 +3,13 @@ info:
   title: Operations API
   version: 1.0.0
 paths:
+  /market/overview:
+    get:
+      summary: The latest market overview stored by the Background Worker (any signed-in user)
+      responses:
+        '200': { description: Market overview, content: { application/json: { schema: { $ref: '#/components/schemas/MarketOverview' } } } }
+        '401': { description: Not signed in }
+        '503': { description: No snapshot yet (code MARKET_DATA_UNAVAILABLE) }
   /departments:
     get:
       summary: List the tenant's departments with employee counts (any signed-in user)
@@ -70,6 +77,36 @@ paths:
         '422': { description: Invalid, content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } } }
 components:
   schemas:
+    MarketOverview:
+      type: object
+      required: [stats, gainers, losers, news, asOf]
+      properties:
+        stats:
+          type: array
+          items:
+            type: object
+            required: [key, label, value, changePct]
+            properties:
+              key: { type: string, enum: [sp500, nasdaq, dow, volume] }
+              label: { type: string }
+              value: { type: string }
+              changePct: { type: number, nullable: true }
+        gainers: { type: array, minItems: 2, maxItems: 2, items: { $ref: '#/components/schemas/Mover' } }
+        losers: { type: array, minItems: 2, maxItems: 2, items: { $ref: '#/components/schemas/Mover' } }
+        news:
+          type: array
+          items:
+            type: object
+            required: [id, headline, publishedAt]
+            properties:
+              id: { type: string }
+              headline: { type: string }
+              publishedAt: { type: string, format: date-time }
+        asOf: { type: string, format: date-time }
+    Mover:
+      type: object
+      required: [symbol, changePct]
+      properties: { symbol: { type: string }, changePct: { type: number } }
     DepartmentName:
       type: object
       required: [name]

@@ -1,8 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import App from './App'
+import { overviewFixture } from './dashboard/fixture'
 
 import * as departments from './api/departments'
 import * as employees from './api/employees'
+import * as market from './api/market'
 
 vi.mock('./api/departments', () => ({ listDepartments: vi.fn().mockResolvedValue([]) }))
 vi.mock('./api/employees', () => ({
@@ -12,15 +14,31 @@ vi.mock('./api/employees', () => ({
   updateEmployee: vi.fn(),
 }))
 
+vi.mock('./api/market', () => ({ getMarketOverview: vi.fn() }))
+
+beforeEach(() => {
+  vi.mocked(market.getMarketOverview).mockResolvedValue(overviewFixture)
+})
+
+const openSettings = () => fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
+
 describe('App', () => {
+  it('opens on the stock dashboard under Overview', async () => {
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: 'Stock dashboard' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page')
+  })
+
   it('opens the new employee record inside the shell under Settings', async () => {
     render(<App />)
+    openSettings()
     expect(await screen.findByRole('heading', { name: 'New employee record' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page')
   })
 
   it('moves between the employee record and the departments screen', async () => {
     render(<App />)
+    openSettings()
     fireEvent.click(await screen.findByRole('button', { name: 'Manage departments' }))
     expect(await screen.findByRole('heading', { level: 1, name: 'Departments' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Back to employee record' }))
@@ -45,6 +63,7 @@ describe('App', () => {
     vi.mocked(employees.createEmployee).mockResolvedValue(created)
     vi.mocked(employees.getEmployee).mockResolvedValue(created)
     render(<App />)
+    openSettings()
     await screen.findByRole('option', { name: 'Design' })
     const type = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } })
     type('Job title', 'Product Designer')

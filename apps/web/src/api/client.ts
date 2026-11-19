@@ -14,7 +14,7 @@ export function getAccessToken(): string | null {
   return null
 }
 
-type Init = { method?: string; body?: unknown }
+type Init = { method?: string; body?: unknown; signal?: AbortSignal }
 
 /** Calls the Operations API with JSON and the bearer token; throws ApiError on a non-2xx answer. */
 export async function apiFetch<T = unknown>(path: string, init: Init = {}): Promise<T> {
@@ -25,6 +25,7 @@ export async function apiFetch<T = unknown>(path: string, init: Init = {}): Prom
     method: init.method ?? 'GET',
     headers,
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
+    signal: init.signal,
   })
   const text = await res.text()
   const body = text ? JSON.parse(text) : undefined
